@@ -1,0 +1,21 @@
+{
+  "name": "ETL_SalesPipeline",
+  "properties": {
+    "activities": [
+      {
+        "name": "CopyFromBlobToSQL",
+        "type": "Copy",
+        "inputs": [
+          { "referenceName": "BlobSalesDataset", "type": "DatasetReference" }
+        ],
+        "outputs": [
+          { "referenceName": "SQLSalesDataset", "type": "DatasetReference" }
+        ],
+        "typeProperties": {
+          "source": { "type": "BlobSource" },
+          "sink": { "type": "SqlSink" }
+        }
+      }
+    ]
+  }
+}
