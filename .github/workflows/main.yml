@@ -13,12 +13,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Login en Vault
-        shell: pwsh
+        shell: powershell
         run: |
           vault login $env:VAULT_TOKEN
 
       - name: Obtener credenciales Azure desde Vault
-        shell: pwsh
+        shell: powershell
         run: |
           $creds = vault kv get -format=json secret/azure-creds | ConvertFrom-Json
           $ARM_CLIENT_ID = $creds.data.data.ARM_CLIENT_ID
@@ -32,19 +32,10 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "ARM_TENANT_ID=$ARM_TENANT_ID"
 
       - name: Login en Azure
-        shell: pwsh
+        shell: powershell
         run: |
           az login --service-principal `
             --username $env:ARM_CLIENT_ID `
             --password $env:ARM_CLIENT_SECRET `
             --tenant $env:ARM_TENANT_ID
 
-      - name: Seleccionar suscripción
-        shell: pwsh
-        run: |
-          az account set --subscription $env:ARM_SUBSCRIPTION_ID
-
-      - name: Comando de prueba en Azure
-        shell: pwsh
-        run: |
-          az group list --output table
