@@ -1,7 +1,7 @@
 {
-  "name": "SQLSalesDataset",
+  "name": "SQLKyi",
   "linkedServiceName": {
-    "referenceName": "opus",
+    "referenceName": "linked_ky",
     "type": "LinkedServiceReference"
   },
   "type": "AzureSqlTable",

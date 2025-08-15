@@ -1,7 +1,7 @@
 {
-  "name": "BlobSalesDataset",
+  "name": "BlobKyi",
   "linkedServiceName": {
-    "referenceName": "opus",
+    "referenceName": "linked_ky",
     "type": "LinkedServiceReference"
   },
   "type": "DelimitedText",
