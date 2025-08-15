@@ -65,12 +65,15 @@ jobs:
 
               Write-Host "Desplegando Linked Service: $name"
 
-              # Despliega el Linked Service en Data Factory
+              # Leer el contenido del archivo JSON
+              $jsonContent = Get-Content $file -Raw
+
+              # Desplegar el Linked Service en Data Factory
               az datafactory linked-service create `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
                   --name $name `
-                  --properties @"$file"
+                  --properties $jsonContent
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
