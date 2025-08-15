@@ -1,4 +1,4 @@
-name: Azure Login desde Vault (Windows Self-Hosted)
+name: Azure desde vault
 
 on:
   push:
