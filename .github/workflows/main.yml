@@ -10,6 +10,7 @@ jobs:
     runs-on: self-hosted
     env:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      AZURE_ACCOUNT_KEY: ${{ secrets.AZURE_ACCOUNT_KEY }}
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -80,18 +81,19 @@ jobs:
                   exit 1
               }
 
-              # Guardar JSON temporal
+              # Guardar JSON temporal limpio
               $tempFile = [System.IO.Path]::GetTempFileName()
               $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
 
               Write-Host "Desplegando Linked Service: $name"
 
-              # Llamar a Azure CLI pasando el archivo temporal
+              # Crear linked service en Data Factory
               az datafactory linked-service create `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
                   --name $name `
-                  --properties @$tempFile
+                  --properties @$absPath
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
