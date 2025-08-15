@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    env:
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -66,14 +68,17 @@ jobs:
               Write-Host "Desplegando Linked Service: $name"
 
               # Leer el contenido del archivo JSON
-              $jsonContent = Get-Content $file -Raw
+              $jsonContent = Get-Content -Raw $file
 
-              # Desplegar el Linked Service en Data Factory
+              # Escapar comillas dobles para pasar JSON como string
+              $escapedJson = $jsonContent -replace '"', '\"'
+
+              # Pasar JSON como string a --properties (entre comillas simples para evitar problemas)
               az datafactory linked-service create `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
                   --name $name `
-                  --properties $jsonContent
+                  --properties "'$escapedJson'"
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
@@ -81,8 +86,3 @@ jobs:
                   --resource-group $rgName `
                   --name $name
           }
-
-
-
-
-
