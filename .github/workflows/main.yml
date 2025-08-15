@@ -153,12 +153,16 @@ jobs:
               $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
               $absPath = Resolve-Path $tempFile
 
+              Write-Host "Desplegando Pipeline: $name"
+
+              # Corregido: usar --pipeline en lugar de --properties
               az datafactory pipeline create `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
                   --name $name `
-                  --properties @$absPath
+                  --pipeline @"$absPath"
 
+              Write-Host "Verificando Pipeline: $name"
               az datafactory pipeline show `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
