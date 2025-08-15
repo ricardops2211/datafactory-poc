@@ -1,7 +1,9 @@
-name: Deploy con Azure desde Vault
+name: Conexión a Azure desde hashicorp vault
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - datafactory-1
 
 jobs:
   deploy:
