@@ -39,18 +39,47 @@ jobs:
             --password $env:ARM_CLIENT_SECRET `
             --tenant $env:ARM_TENANT_ID
 
-      - name: Crear Data Factory si no existe
+      # - name: Crear Data Factory si no existe
+      #   shell: powershell
+      #   run: |
+      #     $rgName = "MiResourceGroup"
+      #     $dataFactoryName = "DatafactoryGHA"
+
+      #     $existing = az datafactory list --resource-group $rgName --query "[?name=='$dataFactoryName']" -o tsv
+      #     if (-not $existing) {
+      #         az datafactory create --resource-group $rgName --name $dataFactoryName --location eastus
+      #     } else {
+      #         Write-Host "Data Factory $dataFactoryName ya existe"
+      #     }
+
+      - name: Desplegar y verificar Linked Services
         shell: powershell
         run: |
-          $rgName = "MiResourceGroup"
+          $linkedServiceFolder = "./linkedservices"
           $dataFactoryName = "DatafactoryGHA"
+          $rgName = "MiResourceGroup"
+          
+          Get-ChildItem -Path $linkedServiceFolder -Filter '*.json' | ForEach-Object {
+              $file = $_.FullName
+              $name = $_.BaseName
 
-          $existing = az datafactory list --resource-group $rgName --query "[?name=='$dataFactoryName']" -o tsv
-          if (-not $existing) {
-              az datafactory create --resource-group $rgName --name $dataFactoryName --location eastus
-          } else {
-              Write-Host "Data Factory $dataFactoryName ya existe"
+              Write-Host "Desplegando Linked Service: $name"
+
+              # Despliega el Linked Service en Data Factory
+              az datafactory linked-service create `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --properties @"$file"
+
+              Write-Host "Verificando Linked Service: $name"
+              az datafactory linked-service show `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name
           }
+
+
 
 
 
