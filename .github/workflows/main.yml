@@ -60,29 +60,41 @@ jobs:
           $linkedServiceFolder = "./linkedservices"
           $dataFactoryName = "DatafactoryGHA"
           $rgName = "MiResourceGroup"
-          
+          $accountKey = $env:AZURE_ACCOUNT_KEY
+
           Get-ChildItem -Path $linkedServiceFolder -Filter '*.json' | ForEach-Object {
               $file = $_.FullName
               $name = $_.BaseName
 
+              Write-Host "Preparando Linked Service: $name"
+
+              # Leer JSON y reemplazar placeholder
+              $jsonContent = Get-Content -Raw $file
+              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.AZURE_ACCOUNT_KEY\s*\}\}', $accountKey
+
+              # Validar JSON
+              try {
+                  $parsed = $jsonContent | ConvertFrom-Json
+              } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              # Guardar JSON temporal
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
+
               Write-Host "Desplegando Linked Service: $name"
 
-              # Leer el contenido del archivo JSON
-              $jsonContent = Get-Content -Raw $file
-
-              # Escapar comillas dobles para pasar JSON como string
-              $escapedJson = $jsonContent -replace '"', '\"'
-
-              # Pasar JSON como string a --properties (entre comillas simples para evitar problemas)
-              az datafactory linked-service create `
-                  --factory-name $dataFactoryName `
-                  --resource-group $rgName `
-                  --name $name `
-                  --properties "'$escapedJson'"
+              # Pasar path absoluto al CLI con comillas dobles escapadas
+              cmd /c "az datafactory linked-service create --factory-name $dataFactoryName --resource-group $rgName --name $name --properties @$absPath"
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
                   --name $name
+
+              Remove-Item $tempFile
           }
