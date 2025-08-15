@@ -1,5 +1,4 @@
 {
-  "name": "AzureBlobStorageLS",
   "properties": {
     "type": "AzureBlobStorage",
     "typeProperties": {
