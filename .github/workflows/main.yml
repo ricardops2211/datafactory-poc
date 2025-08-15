@@ -1,4 +1,4 @@
-name: Conexión a Azure desde HashiCorp Vault
+name: Conexión a Azure desde HashiCorp Vault - Exercise
 
 on:
   push:
