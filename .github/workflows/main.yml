@@ -83,12 +83,15 @@ jobs:
               # Guardar JSON temporal
               $tempFile = [System.IO.Path]::GetTempFileName()
               $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
-              $absPath = Resolve-Path $tempFile
 
               Write-Host "Desplegando Linked Service: $name"
 
-              # Pasar path absoluto al CLI con comillas dobles escapadas
-              cmd /c "az datafactory linked-service create --factory-name $dataFactoryName --resource-group $rgName --name $name --properties @$absPath"
+              # Llamar a Azure CLI pasando el archivo temporal
+              az datafactory linked-service create `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --properties @$tempFile
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
