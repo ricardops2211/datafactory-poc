@@ -7,8 +7,8 @@ on:
 
 jobs:
   login:
-    uses: ricardops2211/datafactory-poc/.github/workflows/vault-azure-login.yml@login-vault-azure
-
+    uses: ./.github/workflows/credentials_azure.yml
+    
   deploy:
     needs: login
     runs-on: self-hosted
