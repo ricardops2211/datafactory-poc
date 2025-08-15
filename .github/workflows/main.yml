@@ -42,16 +42,18 @@ jobs:
       - name: Crear Linked Service en Azure Data Factory
         shell: powershell
         run: |
-          # Variables de ejemplo (ajústalas según tu entorno)
-          $resourceGroup = "HolaResourceGroup"
-          $dataFactoryName = "HolaDataFactory"
-          $linkedServiceName = "HolaLinkedService"
+          # Variables de ejemplo
+          $resourceGroup = "MiResourceGroup"
+          $dataFactoryName = "MiDataFactory"
+          $linkedServiceName = "MiLinkedService"
+          $linkedServiceFile = "linkedService.json"  # archivo en tu repo
 
           # Crear linked service usando el JSON
           az datafactory linked-service create `
             --resource-group $resourceGroup `
             --factory-name $dataFactoryName `
             --name $linkedServiceName `
-            --properties @linkedService.json
+            --properties (Get-Content $linkedServiceFile -Raw)
+
 
 
