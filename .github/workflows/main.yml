@@ -67,18 +67,8 @@ jobs:
 
               Write-Host "Desplegando Linked Service: $name"
 
-              # Leer el contenido del archivo JSON
-              $jsonContent = Get-Content -Raw $file
-
-              # Escapar comillas dobles para pasar JSON como string
-              $escapedJson = $jsonContent -replace '"', '\"'
-
-              # Pasar JSON como string a --properties (entre comillas simples para evitar problemas)
-              az datafactory linked-service create `
-                  --factory-name $dataFactoryName `
-                  --resource-group $rgName `
-                  --name $name `
-                  --properties "'$escapedJson'"
+              # Usar cmd /c para pasar el path al JSON directamente
+              cmd /c "az datafactory linked-service create --factory-name $dataFactoryName --resource-group $rgName --name $name --properties @$file"
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
