@@ -43,7 +43,7 @@ jobs:
         shell: powershell
         run: |
           $rgName = "MiResourceGroup"
-          $dataFactoryName = "MiDataFactory"
+          $dataFactoryName = "DatafactoryGHA"
 
           $existing = az datafactory list --resource-group $rgName --query "[?name=='$dataFactoryName']" -o tsv
           if (-not $existing) {
