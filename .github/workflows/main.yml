@@ -65,14 +65,33 @@ jobs:
               $file = $_.FullName
               $name = $_.BaseName
 
-              Write-Host "Desplegando Linked Service: $name"
+              Write-Host "Preparando Linked Service: $name"
 
-              # Usar cmd /c para pasar el path al JSON directamente
-              cmd /c "az datafactory linked-service create --factory-name $dataFactoryName --resource-group $rgName --name $name --properties @$file"
+              # Leer JSON y reemplazar placeholder
+              $jsonContent = Get-Content -Raw $file
+              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.AZURE_ACCOUNT_KEY\s*\}\}', $accountKey
+
+              # Validar JSON
+              try {
+                  $parsed = $jsonContent | ConvertFrom-Json
+              } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              # Guardar JSON temporal
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+
+              Write-Host "Desplegando Linked Service: $name"
+              cmd /c "az datafactory linked-service create --factory-name $dataFactoryName --resource-group $rgName --name $name --properties @$tempFile"
 
               Write-Host "Verificando Linked Service: $name"
               az datafactory linked-service show `
                   --factory-name $dataFactoryName `
                   --resource-group $rgName `
                   --name $name
+
+              # Borrar archivo temporal
+              Remove-Item $tempFile
           }
