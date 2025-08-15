@@ -1,50 +1,48 @@
-name: Azure desde vault1
+name: Deploy con Azure desde Vault
 
 on:
-  push:
-    branches:
-      - datafactory-1
+  workflow_dispatch:
 
 jobs:
-  azure-login:
-    runs-on: self-hosted # Etiquetas de tu runner, ajusta si la etiqueta es distinta
+  deploy:
+    runs-on: self-hosted
     steps:
-      # 1. Checkout del código
-      - name: Checkout repo
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      # 2. Configurar variables de Vault
-      - name: Configurar entorno Vault
-        shell: powershell
+      - name: Login en Vault
+        shell: pwsh
         run: |
-          $env:VAULT_ADDR = "${{ secrets.VAULT_ADDR }}"
-          $env:VAULT_TOKEN = "${{ secrets.VAULT_TOKEN }}"
+          vault login $env:VAULT_TOKEN
 
-      # 3. Obtener credenciales desde Vault y conectarse a Azure
-      - name: Obtener credenciales desde Vault
+      - name: Obtener credenciales Azure desde Vault
+        shell: pwsh
         run: |
-          vault kv get -format=json secret/azure-creds > azure-creds.json
-          export ARM_CLIENT_ID=$(jq -r '.data.data.ARM_CLIENT_ID' azure-creds.json)
-          export ARM_CLIENT_SECRET=$(jq -r '.data.data.ARM_CLIENT_SECRET' azure-creds.json)
-          export ARM_SUBSCRIPTION_ID=$(jq -r '.data.data.ARM_SUBSCRIPTION_ID' azure-creds.json)
-          export ARM_TENANT_ID=$(jq -r '.data.data.ARM_TENANT_ID' azure-creds.json)
+          $creds = vault kv get -format=json secret/azure-creds | ConvertFrom-Json
+          $ARM_CLIENT_ID = $creds.data.data.ARM_CLIENT_ID
+          $ARM_CLIENT_SECRET = $creds.data.data.ARM_CLIENT_SECRET
+          $ARM_SUBSCRIPTION_ID = $creds.data.data.ARM_SUBSCRIPTION_ID
+          $ARM_TENANT_ID = $creds.data.data.ARM_TENANT_ID
 
-          echo "ARM_CLIENT_ID=$ARM_CLIENT_ID" >> $GITHUB_ENV
-          echo "ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET" >> $GITHUB_ENV
-          echo "ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID" >> $GITHUB_ENV
-          echo "ARM_TENANT_ID=$ARM_TENANT_ID" >> $GITHUB_ENV
-        env:
-          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          Add-Content -Path $env:GITHUB_ENV -Value "ARM_CLIENT_ID=$ARM_CLIENT_ID"
+          Add-Content -Path $env:GITHUB_ENV -Value "ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET"
+          Add-Content -Path $env:GITHUB_ENV -Value "ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID"
+          Add-Content -Path $env:GITHUB_ENV -Value "ARM_TENANT_ID=$ARM_TENANT_ID"
 
       - name: Login en Azure
+        shell: pwsh
         run: |
-          az login --service-principal \
-            --username $ARM_CLIENT_ID \
-            --password $ARM_CLIENT_SECRET \
-            --tenant $ARM_TENANT_ID
+          az login --service-principal `
+            --username $env:ARM_CLIENT_ID `
+            --password $env:ARM_CLIENT_SECRET `
+            --tenant $env:ARM_TENANT_ID
 
-      - name: Verificar suscripción
+      - name: Seleccionar suscripción
+        shell: pwsh
         run: |
-          az account show
+          az account set --subscription $env:ARM_SUBSCRIPTION_ID
+
+      - name: Comando de prueba en Azure
+        shell: pwsh
+        run: |
           az group list --output table
