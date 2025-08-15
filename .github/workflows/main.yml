@@ -140,7 +140,7 @@ jobs:
 
               Write-Host "Preparando Pipeline: $name"
 
-              # Leer y validar JSON
+              # Validar JSON
               $jsonContent = Get-Content -Raw $file
               try {
                   $parsed = $jsonContent | ConvertFrom-Json
@@ -149,20 +149,15 @@ jobs:
                   exit 1
               }
 
-              # Guardar JSON temporal
+              # Guardar JSON temporal limpio
               $tempFile = [System.IO.Path]::GetTempFileName()
               $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
               $absPath = Resolve-Path $tempFile
 
               Write-Host "Desplegando Pipeline: $name"
 
-              # Leer el JSON como string y pasarlo correctamente a Azure CLI
-              $pipelineJson = Get-Content -Raw $absPath
-              az datafactory pipeline create `
-                  --factory-name $dataFactoryName `
-                  --resource-group $rgName `
-                  --name $name `
-                  --pipeline "$pipelineJson"
+              # Usar cmd.exe para pasar el archivo JSON a Azure CLI
+              cmd /c "az datafactory pipeline create --factory-name $dataFactoryName --resource-group $rgName --name $name --pipeline @$absPath"
 
               Write-Host "Verificando Pipeline: $name"
               az datafactory pipeline show `
@@ -170,6 +165,5 @@ jobs:
                   --resource-group $rgName `
                   --name $name
 
-              # Borrar archivo temporal
               Remove-Item $tempFile
           }
