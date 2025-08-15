@@ -4,7 +4,7 @@ name: Conexion a Azure desde Vault
 on:
   push:
     branches:
-      - main
+      - datafactory-1
 
 jobs:
   test-vault-azure:
