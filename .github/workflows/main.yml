@@ -1,5 +1,4 @@
-name: Conexion a Azure desde Vault
-
+name: Azure Login desde Vault (Windows Self-Hosted)
 
 on:
   push:
@@ -7,36 +6,39 @@ on:
       - datafactory-1
 
 jobs:
-  test-vault-azure:
-    runs-on: self-hosted
-    env:
-      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-
+  azure-login:
+    runs-on: self-hosted # Etiquetas de tu runner, ajusta si la etiqueta es distinta
     steps:
-      - name: Checkout
+      # 1. Checkout del código
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 1. Leer credenciales desde Vault
-      - name: Read Azure creds from Vault
-        shell: bash
+      # 2. Configurar variables de Vault
+      - name: Configurar entorno Vault
+        shell: powershell
         run: |
-          vault kv get -format=json secret/azure-creds > azure-creds.json
-          export ARM_CLIENT_ID=$(jq -r '.data.data.ARM_CLIENT_ID' azure-creds.json)
-          export ARM_CLIENT_SECRET=$(jq -r '.data.data.ARM_CLIENT_SECRET' azure-creds.json)
-          export ARM_SUBSCRIPTION_ID=$(jq -r '.data.data.ARM_SUBSCRIPTION_ID' azure-creds.json)
-          export ARM_TENANT_ID=$(jq -r '.data.data.ARM_TENANT_ID' azure-creds.json)
+          $env:VAULT_ADDR = "${{ secrets.VAULT_ADDR }}"
+          $env:VAULT_TOKEN = "${{ secrets.VAULT_TOKEN }}"
 
-      # 2. Azure login usando las credenciales recuperadas
-      - name: Azure login
-        shell: bash
+      # 3. Obtener credenciales desde Vault y conectarse a Azure
+      - name: Obtener credenciales de Azure desde Vault y conectarse
+        shell: powershell
         run: |
-          az login --service-principal \
-            -u "$ARM_CLIENT_ID" \
-            -p "$ARM_CLIENT_SECRET" \
-            --tenant "$ARM_TENANT_ID"
+          # Obtener secretos de Vault en formato JSON
+          vault kv get -format=json secret/azure-creds | Out-File -FilePath azure-creds.json -Encoding utf8
 
-      # 3. Ver suscripción activa
-      - name: Check Azure subscription
-        shell: bash
-        run: az account show
+          # Parsear el JSON
+          $json = Get-Content azure-creds.json | ConvertFrom-Json
+          $env:ARM_CLIENT_ID     = $json.data.data.ARM_CLIENT_ID
+          $env:ARM_CLIENT_SECRET = $json.data.data.ARM_CLIENT_SECRET
+          $env:ARM_SUBSCRIPTION_ID = $json.data.data.ARM_SUBSCRIPTION_ID
+          $env:ARM_TENANT_ID     = $json.data.data.ARM_TENANT_ID
+
+          # Login en Azure con Service Principal
+          az login --service-principal `
+            -u $env:ARM_CLIENT_ID `
+            -p $env:ARM_CLIENT_SECRET `
+            --tenant $env:ARM_TENANT_ID
+
+          # Mostrar la suscripción activa
+          az account show --output table
