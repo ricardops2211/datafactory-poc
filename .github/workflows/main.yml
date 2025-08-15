@@ -60,14 +60,15 @@ jobs:
           $linkedServiceFolder = "./linkedservices"
           $dataFactoryName = "DatafactoryGHA"
           $rgName = "MiResourceGroup"
-          
+          $accountKey = $env:AZURE_ACCOUNT_KEY  # Asegúrate de que este secret esté definido
+
           Get-ChildItem -Path $linkedServiceFolder -Filter '*.json' | ForEach-Object {
               $file = $_.FullName
               $name = $_.BaseName
 
               Write-Host "Preparando Linked Service: $name"
 
-              # Leer JSON y reemplazar placeholder
+              # Leer JSON y reemplazar placeholder por el secret real
               $jsonContent = Get-Content -Raw $file
               $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.AZURE_ACCOUNT_KEY\s*\}\}', $accountKey
 
@@ -84,6 +85,8 @@ jobs:
               $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
 
               Write-Host "Desplegando Linked Service: $name"
+
+              # Ejecutar Azure CLI usando cmd.exe para que lea el JSON correctamente
               cmd /c "az datafactory linked-service create --factory-name $dataFactoryName --resource-group $rgName --name $name --properties @$tempFile"
 
               Write-Host "Verificando Linked Service: $name"
