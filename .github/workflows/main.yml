@@ -1,7 +1,10 @@
 name: Conexion a Azure desde Vault
 
+
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   test-vault-azure:
