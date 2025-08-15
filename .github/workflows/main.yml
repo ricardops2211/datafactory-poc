@@ -39,7 +39,7 @@ jobs:
             --password $env:ARM_CLIENT_SECRET `
             --tenant $env:ARM_TENANT_ID
 
-      - name: Crear Storage Account y Blob Container
+      - name: Crear Resource Group, Storage Account y Blob Container
         shell: powershell
         run: |
           $rgName = "MiResourceGroup"
@@ -49,23 +49,28 @@ jobs:
 
           # Crear Resource Group si no existe
           if (-not (az group exists --name $rgName)) {
-            az group create --name $rgName --location $location
+              Write-Host "Creando Resource Group $rgName..."
+              az group create --name $rgName --location $location
+          } else {
+              Write-Host "Resource Group $rgName ya existe"
           }
 
           # Crear Storage Account
+          Write-Host "Creando Storage Account $storageAccountName..."
           az storage account create `
             --name $storageAccountName `
             --resource-group $rgName `
             --location $location `
             --sku Standard_LRS
 
-          # Obtener la clave de storage
+          # Obtener clave del Storage Account
           $storageKey = az storage account keys list `
             --account-name $storageAccountName `
             --resource-group $rgName `
             --query "[0].value" -o tsv
 
           # Crear Blob Container
+          Write-Host "Creando Blob Container $containerName..."
           az storage container create `
             --name $containerName `
             --account-name $storageAccountName `
