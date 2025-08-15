@@ -10,7 +10,7 @@ jobs:
     runs-on: self-hosted
     env:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-      AZURE_ACCOUNT_KEY: ${{ secrets.AZURE_ACCOUNT_KEY }}
+      ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
           $linkedServiceFolder = "./linkedservices"
           $dataFactoryName = "DatafactoryGHA"
           $rgName = "MiResourceGroup"
-          $accountKey = $env:AZURE_ACCOUNT_KEY
+          $accountKey = $env:ACCOUNT_KEY
 
           Get-ChildItem -Path $linkedServiceFolder -Filter '*.json' | ForEach-Object {
               $file = $_.FullName
@@ -71,7 +71,7 @@ jobs:
 
               # Leer JSON y reemplazar placeholder
               $jsonContent = Get-Content -Raw $file
-              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.AZURE_ACCOUNT_KEY\s*\}\}', $accountKey
+              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.ACCOUNT_KEY\s*\}\}', $accountKey
 
               # Validar JSON
               try {
