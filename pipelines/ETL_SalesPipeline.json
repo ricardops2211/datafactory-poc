@@ -1,0 +1,30 @@
+{
+  "name": "ETL_SalesPipeline",
+  "activities": [
+    {
+      "name": "CopyBlobToSQL",
+      "type": "Copy",
+      "inputs": [
+        {
+          "referenceName": "BlobSalesDataset",
+          "type": "DatasetReference"
+        }
+      ],
+      "outputs": [
+        {
+          "referenceName": "SQLSalesDataset",
+          "type": "DatasetReference"
+        }
+      ],
+      "typeProperties": {
+        "source": {
+          "type": "DelimitedTextSource"
+        },
+        "sink": {
+          "type": "SqlSink",
+          "writeBatchSize": 1000
+        }
+      }
+    }
+  ]
+}

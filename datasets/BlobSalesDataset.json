@@ -1,0 +1,23 @@
+{
+  "name": "BlobSalesDataset",
+  "linkedServiceName": {
+    "referenceName": "opus",
+    "type": "LinkedServiceReference"
+  },
+  "type": "DelimitedText",
+  "typeProperties": {
+    "location": {
+      "type": "AzureBlobStorageLocation",
+      "container": "raw-data",
+      "folderPath": "sales"
+    },
+    "columnDelimiter": ",",
+    "firstRowAsHeader": true
+  },
+  "schema": [
+    { "name": "OrderID", "type": "String" },
+    { "name": "CustomerName", "type": "String" },
+    { "name": "Amount", "type": "Float" },
+    { "name": "OrderDate", "type": "String" }
+  ]
+}

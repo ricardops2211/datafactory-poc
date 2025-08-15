@@ -85,3 +85,84 @@ jobs:
 
               Remove-Item $tempFile
           }
+
+      - name: Desplegar y verificar Datasets
+        shell: powershell
+        run: |
+          $datasetFolder = "./datasets"
+          $dataFactoryName = "DatafactoryGHA"
+          $rgName = "MiResourceGroup"
+
+          Get-ChildItem -Path $datasetFolder -Filter '*.json' | ForEach-Object {
+              $file = $_.FullName
+              $name = $_.BaseName
+
+              Write-Host "Preparando Dataset: $name"
+
+              $jsonContent = Get-Content -Raw $file
+              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.ACCOUNT_KEY\s*\}\}', $env:ACCOUNT_KEY
+
+              try {
+                  $parsed = $jsonContent | ConvertFrom-Json
+              } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
+
+              az datafactory dataset create `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --properties @$absPath
+
+              az datafactory dataset show `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name
+
+              Remove-Item $tempFile
+          }
+
+      - name: Desplegar y verificar Pipelines
+        shell: powershell
+        run: |
+          $pipelineFolder = "./pipelines"
+          $dataFactoryName = "DatafactoryGHA"
+          $rgName = "MiResourceGroup"
+
+          Get-ChildItem -Path $pipelineFolder -Filter '*.json' | ForEach-Object {
+              $file = $_.FullName
+              $name = $_.BaseName
+
+              Write-Host "Preparando Pipeline: $name"
+
+              $jsonContent = Get-Content -Raw $file
+
+              try {
+                  $parsed = $jsonContent | ConvertFrom-Json
+              } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
+
+              az datafactory pipeline create `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --properties @$absPath
+
+              az datafactory pipeline show `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name
+
+              Remove-Item $tempFile
+          }
