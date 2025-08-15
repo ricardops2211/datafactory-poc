@@ -8,8 +8,6 @@ on:
 jobs:
   login:
     uses: ricardops2211/datafactory-poc/.github/workflows/vault-azure-login.yml@login-vault-azure
-    with:
-      vault_token: ${{ secrets.VAULT_TOKEN }}
 
   deploy:
     needs: login
