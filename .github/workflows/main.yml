@@ -39,67 +39,17 @@ jobs:
             --password $env:ARM_CLIENT_SECRET `
             --tenant $env:ARM_TENANT_ID
 
-      - name: Crear Resource Group, Storage Account y Blob Container
-        shell: powershell
-        run: |
-          $rgName = "MiResourceGroup"
-          $location = "eastus"
-          $storageAccountName = "miblobstorage$((Get-Random -Maximum 9999))"
-          $containerName = "mi-container"
-
-          # Crear Resource Group si no existe
-          if (-not (az group exists --name $rgName)) {
-              Write-Host "Creando Resource Group $rgName..."
-              az group create --name $rgName --location $location
-          } else {
-              Write-Host "Resource Group $rgName ya existe"
-          }
-
-          # Crear Storage Account
-          Write-Host "Creando Storage Account $storageAccountName..."
-          az storage account create `
-            --name $storageAccountName `
-            --resource-group $rgName `
-            --location $location `
-            --sku Standard_LRS
-
-          # Obtener clave del Storage Account
-          $storageKey = az storage account keys list `
-            --account-name $storageAccountName `
-            --resource-group $rgName `
-            --query "[0].value" -o tsv
-
-          # Crear Blob Container
-          Write-Host "Creando Blob Container $containerName..."
-          az storage container create `
-            --name $containerName `
-            --account-name $storageAccountName `
-            --account-key $storageKey
-
-          # Generar JSON de Linked Service
-          $linkedServiceFile = "$env:GITHUB_WORKSPACE\linkedService.json"
-          $linkedServiceJson = @{
-              properties = @{
-                  type = "AzureBlobStorage"
-                  typeProperties = @{
-                      connectionString = "DefaultEndpointsProtocol=https;AccountName=$storageAccountName;AccountKey=$storageKey;"
-                  }
-              }
-          } | ConvertTo-Json -Depth 5
-          $linkedServiceJson | Out-File -FilePath $linkedServiceFile -Encoding UTF8
-
-      - name: Crear Linked Service en ADF
+      - name: Crear Data Factory si no existe
         shell: powershell
         run: |
           $dataFactoryName = "MiDataFactory"
-          $linkedServiceName = "MiLinkedService"
-          $linkedServiceFile = "$env:GITHUB_WORKSPACE\linkedService.json"
 
-          az datafactory linked-service create `
-            --resource-group $rgName `
-            --factory-name $dataFactoryName `
-            --name $linkedServiceName `
-            --properties (Get-Content $linkedServiceFile -Raw)
+          $existing = az datafactory list --resource-group $rgName --query "[?name=='$dataFactoryName']" -o tsv
+          if (-not $existing) {
+              az datafactory create --resource-group $rgName --name $dataFactoryName --location eastus
+          } else {
+              Write-Host "Data Factory $dataFactoryName ya existe"
+          }
 
 
 
