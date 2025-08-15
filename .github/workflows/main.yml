@@ -42,6 +42,7 @@ jobs:
       - name: Crear Data Factory si no existe
         shell: powershell
         run: |
+          $rgName = "MiResourceGroup"
           $dataFactoryName = "MiDataFactory"
 
           $existing = az datafactory list --resource-group $rgName --query "[?name=='$dataFactoryName']" -o tsv
