@@ -1,7 +1,7 @@
 {
-  "name": "BlobKyi",
+  "name": "BlobDecisiones",
   "linkedServiceName": {
-    "referenceName": "linked_ky",
+    "referenceName": "linked_decisiones",
     "type": "LinkedServiceReference"
   },
   "type": "DelimitedText",

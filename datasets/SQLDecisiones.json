@@ -1,7 +1,7 @@
 {
-  "name": "SQLKyi",
+  "name": "SQLDecisiones",
   "linkedServiceName": {
-    "referenceName": "linked_ky",
+    "referenceName": "linked_decisiones",
     "type": "LinkedServiceReference"
   },
   "type": "AzureSqlTable",

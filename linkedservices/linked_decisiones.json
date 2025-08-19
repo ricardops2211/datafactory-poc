@@ -1,5 +1,5 @@
 {
-  "name": "linked_ky",
+  "name": "linked_decisiones",
   "type": "AzureBlobStorage",
   "typeProperties": {
     "connectionString": "DefaultEndpointsProtocol=https;AccountName=miblobstorage1234;EndpointSuffix=core.windows.net;AccountKey=${{ secrets.ACCOUNT_KEY }}"

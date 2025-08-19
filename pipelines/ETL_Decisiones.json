@@ -1,15 +1,15 @@
 {
-  "name": "ETL_Kyi_SalesPipeline",
+  "name": "ETL_Decisiones",
   "properties": {
     "activities": [
       {
         "name": "CopyFromBlobToSQL",
         "type": "Copy",
         "inputs": [
-          { "referenceName": "BlobKyi", "type": "DatasetReference" }
+          { "referenceName": "BlobDecisiones", "type": "DatasetReference" }
         ],
         "outputs": [
-          { "referenceName": "SQLKyi", "type": "DatasetReference" }
+          { "referenceName": "SQLDecisiones", "type": "DatasetReference" }
         ],
         "typeProperties": {
           "source": { "type": "BlobSource" },
