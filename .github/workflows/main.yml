@@ -1,4 +1,4 @@
-name: Deploy Data Factory Resources
+name: Deployar Datafactory
 
 on:
   push:
