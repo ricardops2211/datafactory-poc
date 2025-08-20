@@ -20,6 +20,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Verificar versión de Azure CLI
+        shell: powershell
+        run: az version
+
       - name: Leer parámetros desde datosadf.json
         id: load-json
         shell: powershell
