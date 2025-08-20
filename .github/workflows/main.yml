@@ -26,8 +26,9 @@ jobs:
         shell: powershell
         run: |
           $linkedServiceFolder = "./linkedservices"
-          $dataFactoryName = "DatafactoryGHA"
-          $rgName = "MiResourceGroup"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
           $accountKey = $env:ACCOUNT_KEY
 
           Get-ChildItem -Path $linkedServiceFolder -Filter '*.json' | ForEach-Object {
@@ -75,8 +76,9 @@ jobs:
         shell: powershell
         run: |
           $datasetFolder = "./datasets"
-          $dataFactoryName = "DatafactoryGHA"
-          $rgName = "MiResourceGroup"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
 
           Get-ChildItem -Path $datasetFolder -Filter '*.json' | ForEach-Object {
               $file = $_.FullName
@@ -116,8 +118,9 @@ jobs:
         shell: powershell
         run: |
           $pipelineFolder = "./pipelines"
-          $dataFactoryName = "DatafactoryGHA"
-          $rgName = "MiResourceGroup"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
 
           Get-ChildItem -Path $pipelineFolder -Filter '*.json' | ForEach-Object {
               $file = $_.FullName
@@ -157,8 +160,9 @@ jobs:
         shell: powershell
         run: |
           $pipelineFolder = "./pipelines"
-          $dataFactoryName = "DatafactoryGHA"
-          $rgName = "MiResourceGroup"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
 
           Get-ChildItem -Path $pipelineFolder -Filter '*.json' | ForEach-Object {
               $name = $_.BaseName
