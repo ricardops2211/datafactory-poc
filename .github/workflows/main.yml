@@ -7,18 +7,18 @@ on:
 
 jobs:
   login:
-    uses: ./.github/workflows/credentials_azure.yml
+    uses: ricardops2211/datafactory-poc/.github/workflows/credentials_azure.yml@nuevo_datafactry
     secrets: inherit
 
   verify:
     needs: login
-    uses: ./.github/workflows/verify_datafactory.yml
+    uses: ricardops2211/datafactory-poc/.github/workflows/verify_datafactory.yml@nuevo_datafactry
     with:
-      location: "eastus"   # valor por defecto si no lo pasas
+      location: "eastus"
 
   deploy:
     needs: verify
     if: ${{ needs.verify.outputs.factory-status == 'exists' || needs.verify.outputs.factory-status == 'created' }}
-    uses: ./.github/workflows/deploy_etl_datafactory.yml
+    uses: ricardops2211/datafactory-poc/.github/workflows/deploy_etl_datafactory.yml@nuevo_datafactry
     secrets:
       ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
