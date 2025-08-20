@@ -45,6 +45,11 @@ jobs:
 
             if ($factory) {
               echo "exists=true" >> $env:GITHUB_ENV
+              Write-Host ""
+              Write-Host "========================================="
+              Write-Host " EL DATA FACTORY '$env:DATAFACTORY_NAME' YA EXISTE " 
+              Write-Host "=========================================" 
+              Write-Host ""
             }
           }
           catch {
@@ -55,7 +60,12 @@ jobs:
         if: env.exists == 'false'
         shell: powershell
         run: |
-          echo "No existe el Data Factory, se procede a crearlo..."
+          Write-Host ""
+          Write-Host "=========================================" 
+          Write-Host " NO EXISTE EL DATA FACTORY, CREANDO... " 
+          Write-Host "=========================================" 
+          Write-Host ""
+
           az datafactory create `
             --name $env:DATAFACTORY_NAME `
             --resource-group $env:RESOURCE_GROUP `
