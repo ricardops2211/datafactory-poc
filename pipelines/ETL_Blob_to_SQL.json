@@ -1,0 +1,63 @@
+{
+  "name": "ETL_Blob_to_SQL",
+  "properties": {
+    "activities": [
+      {
+        "name": "Get_Metadata_File",
+        "type": "GetMetadata",
+        "typeProperties": {
+          "dataset": {
+            "referenceName": "BlobDecisiones",
+            "type": "DatasetReference"
+          },
+          "fieldList": ["exists", "size", "lastModified"]
+        }
+      },
+      {
+        "name": "If_File_Exists",
+        "type": "IfCondition",
+        "dependsOn": [
+          {
+            "activity": "Get_Metadata_File",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ],
+        "typeProperties": {
+          "expression": {
+            "value": "@activity('Get_Metadata_File').output.exists",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "name": "Copy_Blob_to_SQL",
+              "type": "Copy",
+              "typeProperties": {
+                "source": {
+                  "type": "DelimitedTextSource"
+                },
+                "sink": {
+                  "type": "SqlSink",
+                  "writeBatchSize": 1000,
+                  "writeBatchTimeout": "00:05:00"
+                }
+              },
+              "inputs": [
+                {
+                  "referenceName": "BlobDecisiones",
+                  "type": "DatasetReference"
+                }
+              ],
+              "outputs": [
+                {
+                  "referenceName": "SQLdecisiones",
+                  "type": "DatasetReference"
+                }
+              ]
+            }
+          ],
+          "ifFalseActivities": []
+        }
+      }
+    ]
+  }
+}
