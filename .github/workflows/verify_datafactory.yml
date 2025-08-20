@@ -22,7 +22,7 @@ jobs:
 
       - name: Leer parámetros desde datosadf.json
         id: load-json
-        shell: pwsh
+        shell: powershell
         run: |
           $json = Get-Content "./datosadf.json" | ConvertFrom-Json
           echo "DATAFACTORY_NAME=$($json.dataFactoryName)" >> $env:GITHUB_ENV
@@ -30,7 +30,7 @@ jobs:
 
       - name: Verificar si existe Data Factory
         id: verify
-        shell: pwsh
+        shell: powershell
         run: |
           try {
             $factory = az datafactory factory show `
@@ -49,7 +49,7 @@ jobs:
 
       - name: Crear Data Factory si no existe
         if: env.exists == 'false'
-        shell: pwsh
+        shell: powershell
         run: |
           echo "No existe el Data Factory, se procede a crearlo..."
           az datafactory factory create `
@@ -60,7 +60,7 @@ jobs:
 
       - name: Setear estado como output
         id: set-status
-        shell: pwsh
+        shell: powershell
         run: |
           if ("${{ env.exists }}" -eq "true") {
             echo "factory-status=exists" >> $env:GITHUB_OUTPUT
