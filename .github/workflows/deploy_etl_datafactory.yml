@@ -20,7 +20,7 @@ jobs:
     uses: ./.github/workflows/verify_datafactory.yml
 
   deploy_etl_datafactory:
-    needs: datafactory
+    needs: verify-datafactory
     runs-on: self-hosted
     env:
       ARM_CLIENT_ID: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_ID }}
