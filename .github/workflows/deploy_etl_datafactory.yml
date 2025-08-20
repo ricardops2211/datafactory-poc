@@ -1,0 +1,192 @@
+name: Deployar Datafactory
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: false
+        type: string
+        default: "nuevo_datafactry"
+    secrets:
+      ACCOUNT_KEY:
+        required: true
+
+jobs:
+  login_azure_hvault:
+    uses: ./.github/workflows/credentials_azure.yml
+
+  deploy_etl_datafactory:
+    needs: login_azure_hvault
+    runs-on: self-hosted
+    env:
+      ARM_CLIENT_ID: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ needs.login_azure_hvault.outputs.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ needs.login_azure_hvault.outputs.ARM_TENANT_ID }}
+      ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      # --- LINKED SERVICES ---
+      - name: DEPLOY LINKED SERVICES
+        shell: powershell
+        run: |
+          $linkedServiceFolder = "./linkedservices"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
+          $accountKey = $env:ACCOUNT_KEY
+
+          Get-ChildItem -Path $linkedServiceFolder -Filter '*.json' | ForEach-Object {
+              $file = $_.FullName
+              $name = $_.BaseName
+              Write-Host "Preparando Linked Service: $name"
+
+              $jsonContent = Get-Content -Raw $file
+              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.ACCOUNT_KEY\s*\}\}', $accountKey
+
+              try { $parsed = $jsonContent | ConvertFrom-Json } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
+
+              az datafactory linked-service create `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --properties @$absPath
+
+              az datafactory linked-service show `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name
+
+              Remove-Item $tempFile
+          }
+
+      # --- DATASETS ---
+      - name: DEPLOY DATASETS
+        shell: powershell
+        run: |
+          $datasetFolder = "./datasets"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
+
+          Get-ChildItem -Path $datasetFolder -Filter '*.json' | ForEach-Object {
+              $file = $_.FullName
+              $name = $_.BaseName
+              Write-Host "Preparando Dataset: $name"
+
+              $jsonContent = Get-Content -Raw $file
+              $jsonContent = $jsonContent -replace '\$\{\{\s*secrets\.ACCOUNT_KEY\s*\}\}', $env:ACCOUNT_KEY
+
+              try { $parsed = $jsonContent | ConvertFrom-Json } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
+
+              az datafactory dataset create `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --properties @$absPath
+
+              az datafactory dataset show `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name
+
+              Remove-Item $tempFile
+          }
+
+      # --- PIPELINES ---
+      - name: DEPLOY PIPELINES - ETL DATAFACTORY
+        shell: powershell
+        run: |
+          $pipelineFolder = "./pipelines"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
+
+          Get-ChildItem -Path $pipelineFolder -Filter '*.json' | ForEach-Object {
+              $file = $_.FullName
+              $name = $_.BaseName
+              Write-Host "Preparando Pipeline: $name"
+
+              $jsonContent = Get-Content -Raw $file
+              try { $parsed = $jsonContent | ConvertFrom-Json } catch {
+                  Write-Error "JSON inválido en $file"
+                  exit 1
+              }
+
+              $tempFile = [System.IO.Path]::GetTempFileName()
+              $jsonContent | Set-Content -Path $tempFile -Encoding UTF8
+              $absPath = Resolve-Path $tempFile
+
+              cmd /c "az datafactory pipeline create --factory-name $dataFactoryName --resource-group $rgName --name $name --pipeline @$absPath"
+
+              az datafactory pipeline show `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name
+
+              Remove-Item $tempFile
+          }
+
+      # --- RUN PIPELINES ---
+      - name: RUN AND VERIFICATE ETL DATAFACTORY
+        shell: powershell
+        run: |
+          $pipelineFolder = "./pipelines"
+          $config = Get-Content "./datosadf.json" -Raw | ConvertFrom-Json
+          $dataFactoryName = $config.dataFactoryName
+          $rgName = $config.resourceGroup
+
+          Get-ChildItem -Path $pipelineFolder -Filter '*.json' | ForEach-Object {
+              $name = $_.BaseName
+              Write-Host "Lanzando ejecución del pipeline: $name"
+
+              $runId = az datafactory pipeline create-run `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --query runId -o tsv
+
+              if (-not $runId) { Write-Error "No se pudo iniciar la ejecución del pipeline $name"; exit 1 }
+
+              Write-Host "Pipeline $name iniciado con RunId: $runId"
+
+              $status = "InProgress"
+              while ($status -eq "InProgress") {
+                  Start-Sleep -Seconds 20
+                  $status = az datafactory pipeline-run show `
+                      --factory-name $dataFactoryName `
+                      --resource-group $rgName `
+                      --run-id $runId `
+                      --query status -o tsv
+                  Write-Host "[$name] Estado actual: $status"
+              }
+
+              if ($status -eq "Succeeded") {
+                  Write-Host "=============================="
+                  Write-Host ("   PIPELINE {0} CORRIDO CON EXITO   " -f $name) 
+                  Write-Host "=============================="
+              } else {
+                  Write-Host "#######################################" 
+                  Write-Host ("  PIPELINE {0} TERMINO CON ESTADO: {1}" -f $name, $status)
+                  Write-Host "#######################################"
+                  exit 1
+              }
+          }
