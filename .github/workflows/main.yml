@@ -186,13 +186,22 @@ jobs:
                       --resource-group $rgName `
                       --run-id $runId `
                       --query status -o tsv
-                  Write-Host "⏳ [$name] Estado actual: $status"
+                  Write-Host "[$name] Estado actual: $status"
               }
 
-              if ($status -eq "Succeeded") {
-                  Write-Host "✅ [$name] finalizó correctamente."
-              } else {
-                  Write-Error "❌ [$name] terminó con estado: $status"
-                  exit 1
-              }
+          if ($status -eq "Succeeded") {
+              Write-Host ""
+              Write-Host "==============================" -ForegroundColor Green
+              Write-Host "   PIPELINE $name CORRIDO CON ÉXITO   " -ForegroundColor Green
+              Write-Host "==============================" -ForegroundColor Green
+              Write-Host ""
+          } else {
+              Write-Host ""
+              Write-Host "#######################################" -ForegroundColor Red
+              Write-Host "  PIPELINE $name TERMINÓ CON ESTADO: $status" -ForegroundColor Red
+              Write-Host "#######################################" -ForegroundColor Red
+              Write-Host ""
+              exit 1
+          }
+
           }
