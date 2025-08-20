@@ -7,7 +7,7 @@ on:
 
 jobs:
   call-deploy-adf:
-    uses: ./.github/workflows/deploy_datafactory.yml
+    uses: ./.github/workflows/deploy_etl_datafactory.yml
     with:
       branch: "nuevo_datafactry"
     secrets:
