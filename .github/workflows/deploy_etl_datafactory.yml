@@ -1,40 +1,24 @@
-name: Deployar Datafactory
+name: Deploy ETL ADF
 
 on:
   workflow_call:
-    inputs:
-      branch:
-        required: false
-        type: string
-        default: "nuevo_datafactry"
     secrets:
       ACCOUNT_KEY:
         required: true
 
 jobs:
-  login_azure_hvault:
-    uses: ./.github/workflows/credentials_azure.yml
-    secrets: inherit
-
-  verify_datafactory:
-    needs: login_azure_hvault
-    uses: ./.github/workflows/verify_datafactory.yml
-    secrets: inherit
-
-  deploy_etl_datafactory:
-    needs: [login_azure_hvault, verify_datafactory]
+  deploy:
     runs-on: self-hosted
-    env:
-      ARM_CLIENT_ID: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ needs.login_azure_hvault.outputs.ARM_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ needs.login_azure_hvault.outputs.ARM_TENANT_ID }}
-      ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
     steps:
-      - name: Checkout del repositorio
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.branch }}
+
+      - name: Leer parámetros desde datosadf.json
+        shell: pwsh
+        run: |
+          $json = Get-Content "./datosadf.json" | ConvertFrom-Json
+          echo "DATAFACTORY_NAME=$($json.dataFactoryName)" >> $env:GITHUB_ENV
+          echo "RESOURCE_GROUP=$($json.resourceGroup)" >> $env:GITHUB_ENV
 
       # --- LINKED SERVICES ---
       - name: DEPLOY LINKED SERVICES

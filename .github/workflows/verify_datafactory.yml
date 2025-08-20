@@ -1,16 +1,14 @@
-name: Revisar si datafactory existe
+name: Revisar/Crear Data Factory
 
 on:
   workflow_call:
     inputs:
       location:
-        description: "Ubicación para el Data Factory (ej: eastus)"
         required: false
         default: "eastus"
         type: string
     outputs:
       factory-status:
-        description: "Estado del Data Factory (exists | created)"
         value: ${{ jobs.check_create.outputs.factory-status }}
 
 jobs:
@@ -18,7 +16,6 @@ jobs:
     runs-on: self-hosted
     outputs:
       factory-status: ${{ steps.set-status.outputs.factory-status }}
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -54,13 +51,12 @@ jobs:
         if: env.exists == 'false'
         shell: pwsh
         run: |
-          echo "No existe el Data Factory, se procedera a crearlo en ${{ inputs.location }}..."
+          echo "No existe el Data Factory, se procede a crearlo..."
           az datafactory factory create `
             --name $env:DATAFACTORY_NAME `
             --resource-group $env:RESOURCE_GROUP `
             --location "${{ inputs.location }}" `
             --output none
-          echo "Data Factory creado."
 
       - name: Setear estado como output
         id: set-status
