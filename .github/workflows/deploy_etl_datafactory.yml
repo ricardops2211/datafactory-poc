@@ -177,6 +177,26 @@ jobs:
                   Write-Host "#######################################" 
                   Write-Host ("  PIPELINE {0} TERMINO CON ESTADO: {1}" -f $name, $status)
                   Write-Host "#######################################"
+
+                  Write-Host "Obteniendo logs detallados del pipeline..."
+                  $logs = az datafactory activity-run query-by-pipeline-run `
+                      --factory-name $dataFactoryName `
+                      --resource-group $rgName `
+                      --run-id $runId `
+                      --last-updated-after (Get-Date).AddDays(-1).ToString("s") `
+                      --last-updated-before (Get-Date).AddDays(1).ToString("s") `
+                      -o json | ConvertFrom-Json
+
+                  foreach ($activity in $logs.value) {
+                      Write-Host "---------------------------------------"
+                      Write-Host ("Actividad: {0}" -f $activity.activityName)
+                      Write-Host ("Estado: {0}" -f $activity.status)
+                      if ($activity.error) {
+                          Write-Host ("Error: {0}" -f $activity.error.message) -ForegroundColor Red
+                      }
+                      Write-Host "---------------------------------------"
+                  }
+
                   exit 1
               }
           }
