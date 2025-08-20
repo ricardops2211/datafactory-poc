@@ -4,20 +4,14 @@
     "referenceName": "linked_decisiones",
     "type": "LinkedServiceReference"
   },
-  "type": "DelimitedText",
-  "typeProperties": {
-    "location": {
-      "type": "AzureBlobStorageLocation",
-      "container": "raw-data",
-      "folderPath": "sales"
-    },
-    "columnDelimiter": ",",
-    "firstRowAsHeader": true
-  },
-  "schema": [
-    { "name": "OrderID", "type": "String" },
-    { "name": "CustomerName", "type": "String" },
-    { "name": "Amount", "type": "Float" },
-    { "name": "OrderDate", "type": "String" }
-  ]
-}
+    "type": "DelimitedText",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobStorageLocation",
+        "folderPath": "etl-input",
+        "fileName": "sales_data.csv"
+      },
+      "columnDelimiter": ",",
+      "firstRowAsHeader": true
+    }
+  }

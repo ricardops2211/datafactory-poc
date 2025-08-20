@@ -3,15 +3,16 @@
   "linkedServiceName": {
     "referenceName": "linked_decisiones",
     "type": "LinkedServiceReference"
-  },
-  "type": "AzureSqlTable",
-  "typeProperties": {
-    "tableName": "dbo.Sales"
-  },
-  "schema": [
-    { "name": "OrderID", "type": "String" },
-    { "name": "CustomerName", "type": "String" },
-    { "name": "Amount", "type": "Float" },
-    { "name": "OrderDate", "type": "String" }
-  ]
-}
+    },
+    "type": "DelimitedText",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobStorageLocation",
+        "folderPath": "etl-output",
+        "fileName": "sales_transformed.csv"
+      },
+      "columnDelimiter": ",",
+      "firstRowAsHeader": true
+    }
+  }
+
