@@ -6,23 +6,23 @@ on:
       - etl_datafactory
 
 jobs:
-  login:
+  login_azure_hvault:
     uses: ./.github/workflows/credentials_azure.yml
     
-  deploy:
-    needs: login
+  deploy_etl_datafactory:
+    needs: login_azure_hvault
     runs-on: self-hosted
     env:
-      ARM_CLIENT_ID: ${{ needs.login.outputs.ARM_CLIENT_ID }}
-      ARM_CLIENT_SECRET: ${{ needs.login.outputs.ARM_CLIENT_SECRET }}
-      ARM_SUBSCRIPTION_ID: ${{ needs.login.outputs.ARM_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ needs.login.outputs.ARM_TENANT_ID }}
+      ARM_CLIENT_ID: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ needs.login_azure_hvault.outputs.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ needs.login_azure_hvault.outputs.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ needs.login_azure_hvault.outputs.ARM_TENANT_ID }}
       ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      - name: Desplegar y verificar Linked Services
+      - name: DEPLOY LINKED SERVICES
         shell: powershell
         run: |
           $linkedServiceFolder = "./linkedservices"
@@ -71,7 +71,7 @@ jobs:
               Remove-Item $tempFile
           }
 
-      - name: Desplegar y verificar Datasets
+      - name: DEPLOY DATASETS
         shell: powershell
         run: |
           $datasetFolder = "./datasets"
@@ -112,7 +112,7 @@ jobs:
               Remove-Item $tempFile
           }
 
-      - name: Desplegar y verificar Pipelines
+      - name: DEPLOY PIPELINES - ETL DATAFACTORY
         shell: powershell
         run: |
           $pipelineFolder = "./pipelines"
@@ -153,7 +153,7 @@ jobs:
               Remove-Item $tempFile
           }
 
-      - name: Ejecutar y verificar Pipelines
+      - name: RUN AND VERIFICATE ETL DATAFACTORY
         shell: powershell
         run: |
           $pipelineFolder = "./pipelines"
@@ -189,19 +189,19 @@ jobs:
                   Write-Host "[$name] Estado actual: $status"
               }
 
-          if ($status -eq "Succeeded") {
-              Write-Host ""
-              Write-Host "==============================" -ForegroundColor Green
-              Write-Host "   PIPELINE $name CORRIDO CON ÉXITO   " -ForegroundColor Green
-              Write-Host "==============================" -ForegroundColor Green
-              Write-Host ""
-          } else {
-              Write-Host ""
-              Write-Host "#######################################" -ForegroundColor Red
-              Write-Host "  PIPELINE $name TERMINÓ CON ESTADO: $status" -ForegroundColor Red
-              Write-Host "#######################################" -ForegroundColor Red
-              Write-Host ""
-              exit 1
+              if ($status -eq "Succeeded") {
+                  Write-Host ""
+                  Write-Host "==============================" -ForegroundColor Green
+                  Write-Host ("   PIPELINE {0} CORRIDO CON EXITO   " -f $name) -ForegroundColor Green
+                  Write-Host "==============================" -ForegroundColor Green
+                  Write-Host ""
+              } else {
+                  Write-Host ""
+                  Write-Host "#######################################" -ForegroundColor Red
+                  Write-Host ("  PIPELINE {0} TERMINO CON ESTADO: {1}" -f $name, $status) -ForegroundColor Red
+                  Write-Host "#######################################" -ForegroundColor Red
+                  Write-Host ""
+                  exit 1
+              }
           }
 
-          }
