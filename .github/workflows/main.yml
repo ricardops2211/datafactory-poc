@@ -152,3 +152,47 @@ jobs:
 
               Remove-Item $tempFile
           }
+
+      - name: Ejecutar y verificar Pipelines
+        shell: powershell
+        run: |
+          $pipelineFolder = "./pipelines"
+          $dataFactoryName = "DatafactoryGHA"
+          $rgName = "MiResourceGroup"
+
+          Get-ChildItem -Path $pipelineFolder -Filter '*.json' | ForEach-Object {
+              $name = $_.BaseName
+              Write-Host "Lanzando ejecución del pipeline: $name"
+
+              $runId = az datafactory pipeline create-run `
+                  --factory-name $dataFactoryName `
+                  --resource-group $rgName `
+                  --name $name `
+                  --query runId -o tsv
+
+              if (-not $runId) {
+                  Write-Error "No se pudo iniciar la ejecución del pipeline $name"
+                  exit 1
+              }
+
+              Write-Host "Pipeline $name iniciado con RunId: $runId"
+
+              # Monitorear el estado del pipeline
+              $status = "InProgress"
+              while ($status -eq "InProgress") {
+                  Start-Sleep -Seconds 20
+                  $status = az datafactory pipeline-run show `
+                      --factory-name $dataFactoryName `
+                      --resource-group $rgName `
+                      --run-id $runId `
+                      --query status -o tsv
+                  Write-Host "⏳ [$name] Estado actual: $status"
+              }
+
+              if ($status -eq "Succeeded") {
+                  Write-Host "✅ [$name] finalizó correctamente."
+              } else {
+                  Write-Error "❌ [$name] terminó con estado: $status"
+                  exit 1
+              }
+          }
