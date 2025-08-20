@@ -10,14 +10,14 @@ jobs:
     uses: ./.github/workflows/credentials_azure.yml
     secrets: inherit
 
-  verify-azuredatafactory:
+  verify:
     needs: logueo-azure-hvault
     uses: ./.github/workflows/verify_datafactory.yml
     with:
       location: "eastus"
 
   deploy-azuredatafactory:
-    needs: verify-azuredatafactory
+    needs: verify
     if: ${{ needs.verify.outputs.factory-status == 'exists' || needs.verify.outputs.factory-status == 'created' }}
     uses: ./.github/workflows/deploy_etl_datafactory.yml
     secrets:
