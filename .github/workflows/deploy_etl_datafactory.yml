@@ -197,7 +197,7 @@ jobs:
                       Write-Host ("Actividad: {0}" -f $activity.activityName)
                       Write-Host ("Estado: {0}" -f $activity.status)
                       if ($activity.error) {
-                          Write-Host ("Error: {0}" -f $activity.error.message) -ForegroundColor Red
+                          Write-Host ("Error: {0}" -f $activity.error.message) 
                       }
                       Write-Host "---------------------------------------"
                   }
