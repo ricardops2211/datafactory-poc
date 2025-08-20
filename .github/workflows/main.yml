@@ -191,15 +191,15 @@ jobs:
 
               if ($status -eq "Succeeded") {
                   Write-Host ""
-                  Write-Host "==============================" -ForegroundColor Green
-                  Write-Host ("   PIPELINE {0} CORRIDO CON EXITO   " -f $name) -ForegroundColor Green
-                  Write-Host "==============================" -ForegroundColor Green
+                  Write-Host "==============================" 
+                  Write-Host ("   PIPELINE {0} CORRIDO CON EXITO   " -f $name) 
+                  Write-Host "==============================" 
                   Write-Host ""
               } else {
                   Write-Host ""
-                  Write-Host "#######################################" -ForegroundColor Red
-                  Write-Host ("  PIPELINE {0} TERMINO CON ESTADO: {1}" -f $name, $status) -ForegroundColor Red
-                  Write-Host "#######################################" -ForegroundColor Red
+                  Write-Host "#######################################" 
+                  Write-Host ("  PIPELINE {0} TERMINO CON ESTADO: {1}" -f $name, $status)
+                  Write-Host "#######################################"
                   Write-Host ""
                   exit 1
               }
