@@ -19,6 +19,7 @@ jobs:
   verify_datafactory:
     needs: login_azure_hvault
     uses: ./.github/workflows/verify_datafactory.yml
+    secrets: inherit
 
   deploy_etl_datafactory:
     needs: [login_azure_hvault, verify_datafactory]
