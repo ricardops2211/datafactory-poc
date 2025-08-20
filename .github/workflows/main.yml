@@ -1,4 +1,4 @@
-name: Deployar Datafactory
+name: Datafactory - LAB
 
 on:
   push:
