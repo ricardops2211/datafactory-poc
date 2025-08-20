@@ -6,7 +6,7 @@ on:
       - nuevo_datafactry
 
 jobs:
-  call-deploy-adf:
+  ADF:
     uses: ./.github/workflows/deploy_etl_datafactory.yml
     with:
       branch: "nuevo_datafactry"

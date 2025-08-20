@@ -23,11 +23,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-
-      - name: Login en Azure desde Vault
-        uses: ./.github/workflows/credentials_azure.yml
-
-
       - name: Leer parámetros desde datosadf.json
         id: load-json
         shell: pwsh
@@ -35,7 +30,6 @@ jobs:
           $json = Get-Content "./datosadf.json" | ConvertFrom-Json
           echo "DATAFACTORY_NAME=$($json.dataFactoryName)" >> $env:GITHUB_ENV
           echo "RESOURCE_GROUP=$($json.resourceGroup)" >> $env:GITHUB_ENV
-
 
       - name: Verificar si existe Data Factory
         id: verify
@@ -56,7 +50,6 @@ jobs:
             echo "exists=false" >> $env:GITHUB_ENV
           }
 
-      
       - name: Crear Data Factory si no existe
         if: env.exists == 'false'
         shell: pwsh
@@ -68,7 +61,6 @@ jobs:
             --location "${{ inputs.location }}" `
             --output none
           echo "Data Factory creado."
-
 
       - name: Setear estado como output
         id: set-status
