@@ -13,8 +13,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set ACCOUNT_KEY env
-        run: echo "ACCOUNT_KEY=${{ secrets.ACCOUNT_KEY }}" >> $GITHUB_ENV
+      - name: Exportar ACCOUNT_KEY al entorno
+        shell: powershell
+        run: |
+          echo "ACCOUNT_KEY=${{ secrets.ACCOUNT_KEY }}" >> $env:GITHUB_ENV
 
       - name: Leer parámetros desde datosadf.json
         shell: powershell
