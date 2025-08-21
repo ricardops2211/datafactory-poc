@@ -3,22 +3,22 @@ name: Ejecutar deploy ADF
 on:
   push:
     branches:
-      - nuevo_datafactry   # la rama desde donde disparas
+      - datafactory-reusable   # la rama desde donde disparas
 
 jobs:
   logueo-azure-hvault:
-    uses: ./.github/workflows/credentials_azure.yml
+    uses: ricardops2211/ci-cd-reusables/.github/workflows/credentials_azure.yml@datafactory
     secrets: inherit
 
   verify:
     needs: logueo-azure-hvault
-    uses: ./.github/workflows/verify_datafactory.yml
+    uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_datafactory.yml@datafactory
     with:
       location: "eastus"
 
   deploy-azuredatafactory:
     needs: verify
     if: ${{ needs.verify.outputs.factory-status == 'exists' || needs.verify.outputs.factory-status == 'created' }}
-    uses: ./.github/workflows/deploy_etl_datafactory.yml
+    uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_etl_datafactory.yml@datafactory
     secrets:
       ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
