@@ -1,0 +1,19 @@
+-- NotebookSQL
+-- Variables recibidas como widgets en Databricks SQL
+CREATE WIDGET TEXT db_name DEFAULT "demo_db";
+CREATE WIDGET TEXT table_name DEFAULT "demo_table";
+
+SET db_name = getArgument("db_name");
+SET table_name = getArgument("table_name");
+
+PRINT CONCAT("Ejecutando NotebookSQL en base de datos: ", db_name, ", tabla: ", table_name);
+
+-- Ejemplo simple: crear tabla
+CREATE OR REPLACE TABLE ${db_name}.${table_name} (
+  id INT,
+  name STRING
+);
+
+INSERT INTO ${db_name}.${table_name} VALUES (1, 'Alice'), (2, 'Bob');
+
+SELECT * FROM ${db_name}.${table_name};

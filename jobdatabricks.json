@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Python Notebook Workflow",
+    "tasks": [
+      {
+        "task_key": "run_python_notebook",
+        "description": "Ejecuta notebook Python desde repo",
+        "notebook_task": {
+          "notebook_path": "/Repos/tu_usuario/pipeline/notebook/py/param_python",
+          "base_parameters": {
+            "param1": "value1",
+            "param2": "value2"
+          }
+        },
+        "new_cluster": {
+          "spark_version": "13.2.x-scala2.12",
+          "node_type_id": "Standard_DS3_v2",
+          "num_workers": 2,
+          "autoscale": {
+            "min_workers": 1,
+            "max_workers": 3
+          }
+        },
+        "timeout_seconds": 1800
+      }
+    ],
+    "timeout_seconds": 3600,
+    "max_concurrent_runs": 1
+  },
+  {
+    "name": "SQL Notebook Workflow",
+    "tasks": [
+      {
+        "task_key": "run_sql_notebook",
+        "description": "Ejecuta notebook SQL desde repo",
+        "notebook_task": {
+          "notebook_path": "/Repos/tu_usuario/pipeline/notebook/sql/param_sql",
+          "base_parameters": {
+            "db_name": "demo_db",
+            "table_name": "demo_table"
+          }
+        },
+        "new_cluster": {
+          "spark_version": "13.2.x-scala2.12",
+          "node_type_id": "Standard_DS3_v2",
+          "num_workers": 2,
+          "autoscale": {
+            "min_workers": 1,
+            "max_workers": 3
+          }
+        },
+        "timeout_seconds": 1800
+      }
+    ],
+    "timeout_seconds": 3600,
+    "max_concurrent_runs": 1
+  }
+]

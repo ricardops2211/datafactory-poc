@@ -1,0 +1,13 @@
+# NotebookPython
+dbutils.widgets.text("param1", "default1")
+dbutils.widgets.text("param2", "default2")
+
+param1 = dbutils.widgets.get("param1")
+param2 = dbutils.widgets.get("param2")
+
+print(f"Ejecutando NotebookPython con param1={param1}, param2={param2}")
+
+# Ejemplo simple de procesamiento
+data = [1, 2, 3, 4, 5]
+squared = [x**2 for x in data]
+print("Datos al cuadrado:", squared)
