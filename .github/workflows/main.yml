@@ -3,7 +3,7 @@ name: Despliegue de databricks
 on:
   push:
     branches:
-      - databricks*
+      - colocarrama
 
 jobs:
   login-databricks:
