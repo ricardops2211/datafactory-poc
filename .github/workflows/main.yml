@@ -1,56 +1,21 @@
-name: Conexión a Azure desde hashicorp vault
+name: Despliegue de databricks
 
 on:
   push:
     branches:
-      - datafactory-1
+      - databricks*
 
 jobs:
-  deploy:
+  login-databricks:
+    uses: ./.github/workflows/login-azurehv.yml
+
+  listar-clusters-db:
     runs-on: self-hosted
+    needs: login-databricks
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4
-
-      - name: Login en Vault
+      - name: Listar clusters Databricks
         shell: powershell
         run: |
-          vault login $env:VAULT_TOKEN
-
-      - name: Obtener credenciales Azure desde Vault
-        shell: powershell
-        run: |
-          $creds = vault kv get -format=json secret/azure-creds | ConvertFrom-Json
-          $ARM_CLIENT_ID = $creds.data.data.ARM_CLIENT_ID
-          $ARM_CLIENT_SECRET = $creds.data.data.ARM_CLIENT_SECRET
-          $ARM_SUBSCRIPTION_ID = $creds.data.data.ARM_SUBSCRIPTION_ID
-          $ARM_TENANT_ID = $creds.data.data.ARM_TENANT_ID
-
-          Add-Content -Path $env:GITHUB_ENV -Value "ARM_CLIENT_ID=$ARM_CLIENT_ID"
-          Add-Content -Path $env:GITHUB_ENV -Value "ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET"
-          Add-Content -Path $env:GITHUB_ENV -Value "ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID"
-          Add-Content -Path $env:GITHUB_ENV -Value "ARM_TENANT_ID=$ARM_TENANT_ID"
-
-      - name: Login en Azure
-        shell: powershell
-        run: |
-          az login --service-principal `
-            --username $env:ARM_CLIENT_ID `
-            --password $env:ARM_CLIENT_SECRET `
-            --tenant $env:ARM_TENANT_ID
-
-      - name: Crear Data Factory si no existe
-        shell: powershell
-        run: |
-          $rgName = "MiResourceGroup"
-          $dataFactoryName = "DatafactoryGHA"
-
-          $existing = az datafactory list --resource-group $rgName --query "[?name=='$dataFactoryName']" -o tsv
-          if (-not $existing) {
-              az datafactory create --resource-group $rgName --name $dataFactoryName --location eastus
-          } else {
-              Write-Host "Data Factory $dataFactoryName ya existe"
-          }
-
+          databricks clusters list
 
 
