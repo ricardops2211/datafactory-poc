@@ -1,0 +1,36 @@
+name: Loguearse en databricks a través de Hashicorp Vault
+
+on:
+  workflow_call:
+
+jobs:
+  login_databricks_hvault:
+    runs-on: self-hosted
+    outputs:
+      DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+      DATABRICKS_HOST: ${{ steps.get-creds.outputs.DATABRICKS_HOST }}
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Login en Vault
+        shell: powershell
+        run: |
+          vault login $env:VAULT_TOKEN
+
+      - name: Obtener credenciales Databricks desde Vault
+        id: get-creds
+        shell: powershell
+        run: |
+          $creds = vault kv get -format=json secret/azure-databricks | ConvertFrom-Json
+          Write-Output "DATABRICKS_TOKEN=$($creds.data.data.token)" >> $env:GITHUB_OUTPUT
+          Write-Output "DATABRICKS_HOST=$($creds.data.data.host)" >> $env:GITHUB_OUTPUT
+
+      - name: Configurar Databricks CLI
+        shell: powershell
+        run: |
+          pip install databricks-cli
+          databricks configure --token <<EOF
+          ${{ steps.get-creds.outputs.DATABRICKS_HOST }}
+          ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          EOF
