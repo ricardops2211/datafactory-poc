@@ -15,12 +15,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Vault login test
-        run: |
-          echo "Usando VAULT_ADDR=$env:VAULT_ADDR"
-          echo "Intentando login con el token..."
-          vault.exe login $env:VAULT_TOKEN
-          vault.exe token lookup
-
-      - name: Vault login test
+      - name: Probar lookup directo
         run: vault token lookup
+
