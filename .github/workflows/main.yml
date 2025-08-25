@@ -7,7 +7,7 @@ on:
 
 jobs:
   vault-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       VAULT_ADDR: http://127.0.0.1:8200
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}   # <- guardado en GitHub Secrets
