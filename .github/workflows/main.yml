@@ -1,4 +1,4 @@
-dname: Ejecutar deploy datafactory-richies
+name: Ejecutar deploy datafactory-richies
 
 on:
   push:
