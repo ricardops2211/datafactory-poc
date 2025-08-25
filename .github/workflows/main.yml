@@ -10,18 +10,17 @@ jobs:
     runs-on: self-hosted
     env:
       VAULT_ADDR: http://127.0.0.1:8200
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}   # <- guardado en GitHub Secrets
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install Vault CLI
+      - name: Vault login test
         run: |
-          sudo apt-get update
-          sudo apt-get install -y vault
-
-      - name: Vault status
-        run: vault status
+          echo "Usando VAULT_ADDR=$env:VAULT_ADDR"
+          echo "Intentando login con el token..."
+          vault.exe login $env:VAULT_TOKEN
+          vault.exe token lookup
 
       - name: Vault login test
         run: vault token lookup
