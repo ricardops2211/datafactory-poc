@@ -3,22 +3,25 @@ name: Ejecutar deploy ADFS
 on:
   push:
     branches:
-      - datafactory-reusable   # la rama desde donde disparas
+      - test-hashicorp
 
 jobs:
-  logueo-azure-hvault:
-    uses: ricardops2211/ci-cd-reusables/.github/workflows/credentials_azure.yml@datafactory
-    secrets: inherit
+  vault-test:
+    runs-on: ubuntu-latest
+    env:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}   # <- guardado en GitHub Secrets
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-  verify:
-    needs: logueo-azure-hvault
-    uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_datafactory.yml@datafactory
-    with:
-      location: "eastus"
+      - name: Install Vault CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y vault
 
-  deploy-azuredatafactory:
-    needs: verify
-    if: ${{ needs.verify.outputs.factory-status == 'exists' || needs.verify.outputs.factory-status == 'created' }}
-    uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_etl_datafactory.yml@datafactory
-    secrets:
-      ACCOUNT_KEY: ${{ secrets.ACCOUNT_KEY }}
+      - name: Vault status
+        run: vault status
+
+      - name: Vault login test
+        run: vault token lookup
